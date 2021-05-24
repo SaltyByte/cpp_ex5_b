@@ -1,5 +1,5 @@
 #include "doctest.h"
-#include "BinaryTree.hpp"
+#include "sources/BinaryTree.hpp"
 #include <string>
 
 using namespace ariel;
