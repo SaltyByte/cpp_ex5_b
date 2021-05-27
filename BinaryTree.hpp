@@ -40,7 +40,43 @@ namespace ariel {
             }
 
             preOrderIterator &operator++() {
-                pointer_to_node = pointer_to_node->left;
+                if (pointer_to_node == nullptr) { // cant inc, end of iterator
+                    throw std::invalid_argument("Cant increment end of iter");
+                }
+                if (pointer_to_node->left != nullptr) { // if we got left child
+                    pointer_to_node = pointer_to_node->left;
+                    return *this;
+                }
+                if (pointer_to_node->right != nullptr) { // if we got right child
+                    pointer_to_node = pointer_to_node->right;
+                    return *this;
+                }
+                if (pointer_to_node->father->right != nullptr &&
+                    pointer_to_node->father->left == pointer_to_node) { // we are left child at the end and we got sibling
+                    pointer_to_node = pointer_to_node->father->right;
+                    return *this;
+                }
+                if (pointer_to_node == pointer_to_node->father->right) { // we are most right after iterating, need to go up.
+                    while (pointer_to_node == pointer_to_node->father->right) {
+                        pointer_to_node = pointer_to_node->father;
+                        if (pointer_to_node->father == nullptr) {
+                            pointer_to_node = nullptr;
+                            return *this;
+                        }
+                    }
+                    if (pointer_to_node->father->right != nullptr) { // im now left child, go to right child.
+                        pointer_to_node = pointer_to_node->father->right;
+                        return *this;
+                    }
+                }
+                while (pointer_to_node->father->right == nullptr) { // lastly we are most left and no sibling, go up until we reach to right sibling
+                    pointer_to_node = pointer_to_node->father;
+                    if (pointer_to_node->father == nullptr) {
+                        pointer_to_node = nullptr;
+                        return *this;
+                    }
+                }
+                pointer_to_node = pointer_to_node->father->right;
                 return *this;
             }
 
@@ -181,9 +217,21 @@ namespace ariel {
             }
         }
 
+        void deleteNodes(Node *node) {
+            if (node) {
+                deleteNodes(node->left);
+                deleteNodes(node->right);
+                delete node;
+            }
+        }
+
         Node *root;
     public:
         BinaryTree() : root(nullptr) {}
+
+        ~BinaryTree() {
+            deleteNodes(root);
+        }
 
         BinaryTree &add_root(const T &t) {
             if (root != nullptr) {
@@ -228,7 +276,6 @@ namespace ariel {
             if (root == nullptr) {
                 return preOrderIterator{nullptr};
             }
-
             return preOrderIterator{this->root};
         }
 
